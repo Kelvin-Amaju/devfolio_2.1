@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Redirecting…</title>
+  <meta name="redirect" content="" />
+  <style>
+    :root{--bg:#080c10;--text:#e8edf3;--muted:#6b7a8d}
+    html,body{height:100%}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--text)}
+    .card{max-width:760px;padding:2rem;text-align:center}
+    a{color:#00cfff}
+    small{color:var(--muted)}
+  </style>
+</head>
+<body>
+  <main class="card" role="main">
+    <h1 id="title">Redirecting…</h1>
+    <p id="msg">Please wait while we take you to the destination.</p>
+    <p><a id="fallback" href="devfolio.html">Open destination manually</a></p>
+    <p><small>If you are not redirected automatically, use the link above.</small></p>
+  </main>
+
+  <script>
+    (function(){
+      // Helper to read query string params
+      function param(name){ const u = new URLSearchParams(location.search); return u.get(name); }
+
+      // Destination precedence: ?to | ?dest -> <meta name="redirect"> -> / (root)
+      const metaRedirect = document.querySelector('meta[name="redirect"]')?.getAttribute('content') || '';
+      const dest = param('to') || param('dest') || metaRedirect || 'devfolio.html';
+
+      // Delay in seconds
+      const delaySec = Number(param('delay') || 0);
+      const delayMs = Math.max(0, delaySec) * 1000;
+
+      // method: replace (default) or assign
+      const method = (param('method') || 'replace').toLowerCase();
+
+      const titleEl = document.getElementById('title');
+      const msgEl = document.getElementById('msg');
+      const fallback = document.getElementById('fallback');
+
+      if(!dest){ titleEl.textContent = 'No destination specified'; msgEl.textContent = 'This redirect page requires a destination. Provide ?to= or set a meta[name=redirect].'; fallback.style.display='none'; return; }
+
+      fallback.href = dest;
+      msgEl.textContent = 'You will be redirected to ' + dest + (delaySec ? (' in ' + delaySec + ' second' + (delaySec===1?'':'s')) : '') + '.';
+
+      // For accessibility, announce the redirect
+      try{ if(window.speechSynthesis && 'onvoiceschanged' in window){ /* avoid noisy speech - optional */ } }catch(e){}
+
+      // Perform the redirect after the delay
+      setTimeout(function(){
+        if(method === 'assign') location.assign(dest);
+        else location.replace(dest);
+      }, delayMs);
+
+    })();
+  </script>
+</body>
+</html>
